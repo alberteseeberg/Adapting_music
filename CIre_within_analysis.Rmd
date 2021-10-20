@@ -1,28 +1,110 @@
 ---
-title: "CI_re_analysis"
+title: "CI_re_within_analysis"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+#Load packages
+```{r}
+pacman::p_load(lme4, ggplot2)
 ```
 
-## R Markdown
+#Load data
+```{r}
+long = read_csv("long.csv")
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+long$Deviant=as.factor(long$Deviant)
+long$DeviantLevel=as.factor(long$DeviantLevel)
+long$Time = as.factor(long$Time)
+long$ID=as.factor(long$ID)
+long$M_knowledge = ordered(long$M_knowledge, levels = c("1","2","3","4","5"))
+long$M_enjoyment=ordered(long$M_enjoyment, levels = c("1", "2", "3", "4", "5", "6","7"))
+long$Listeninghabits=ordered(long$Listeninghabits, levels = c("Low", "High"))
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+change_all = read_csv("change_all.csv")
+change_all$Deviant=as.factor(change_all$Deviant)
+change_all$DeviantLevel=as.factor(change_all$DeviantLevel)
+change_all$ID=as.factor(change_all$ID)
 ```
 
-## Including Plots
+#Hierarchical mixed effects modeling - MMN Amplitude
+```{r}
+M0=lmer(Amplitude~1+(1|ID), data=long, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
 
-You can also embed plots, for example:
+M1=lmer(Amplitude~Deviant+(1|ID), data=long, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+M2=lmer(Amplitude~Deviant+DeviantLevel+(1|ID), data=long, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M3=lmer(Amplitude~Deviant+DeviantLevel+Time+(1|ID), data=long, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M4=lmer(Amplitude~Deviant*DeviantLevel+Time+(1|ID), data=long, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M5=lmer(Amplitude~Deviant*DeviantLevel+Deviant*Time+(1|ID), data=long, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M6=lmer(Amplitude~Deviant*DeviantLevel+Deviant*Time+DeviantLevel*Time+(1|ID), data=long, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+anova(M0,M1,M2,M3,M4,M5,M6)
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+#Best model
+```{r}
+summary(M5)
+
+#Checking assumptions with diagnostic plots
+qqnorm(resid(M5))
+plot(M5)
+```
+
+#Hierarchical mixed effects modeling - 3-AFC (Behavioral)
+```{r}
+M0=glmer(cbind(AvCor*6,6)~1+(1|ID), data=long, family="binomial", control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M1=glmer(cbind(AvCor*6,6)~Deviant+(1|ID), data=long, family="binomial", control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M2=glmer(cbind(AvCor*6,6)~Deviant+DeviantLevel+(1|ID), data=long, family="binomial", control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M3=glmer(cbind(AvCor*6,6)~Deviant+DeviantLevel+Time+(1|ID), data=long,family="binomial", control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M4=glmer(cbind(AvCor*6,6)~Deviant*DeviantLevel+Time+(1|ID), data=long, family="binomial", control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M5=glmer(cbind(AvCor*6,6)~Deviant*DeviantLevel+Deviant*Time+(1|ID), data=long, family="binomial", control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M6=glmer(cbind(AvCor*6,6)~Deviant*DeviantLevel+Deviant*Time+DeviantLevel*Time+(1|ID), data=long, family="binomial", control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+anova(M0,M1,M2,M3,M4,M5,M6)
+```
+
+#Hierarchical mixed effects modeling - Latency
+```{r}
+M0=lmer(Latency_peak~1+(1|ID), data=long, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M1=lmer(Latency_peak~Deviant+(1|ID), data=long, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M2=lmer(Latency_peak~Deviant+DeviantLevel+(1|ID), data=long, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M3=lmer(Latency_peak~Deviant+DeviantLevel+Time+(1|ID), data=long, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M4=lmer(Latency_peak~Deviant*DeviantLevel+Time+(1|ID), data=long, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M5=lmer(Latency_peak~Deviant*DeviantLevel+Deviant*Time+(1|ID), data=long, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M6=lmer(Latency_peak~Deviant*DeviantLevel+Deviant*Time+DeviantLevel*Time+(1|ID), data=long, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+
+anova(M0,M1,M2,M3,M4,M5,M6)
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
