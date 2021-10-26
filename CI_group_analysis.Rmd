@@ -3,30 +3,52 @@ title: "CI_group_analysis"
 output: html_document
 ---
 
-### Load packages
+# Load packages
 ```{r}
 pacman::p_load(readr, lme4, emmeans, yarrr, ggplot2)
 ```
 
-
+# Load data
 ```{r}
+amp = read_csv("amp.csv")
+amp = amp[-1]
 amp_all = read_csv("amp_all.csv")
+lat = read_csv("lat.csv")
+lat=lat[-1]
 lat_all = read_csv("lat_all.csv")
+All_behav = read_csv("All_behav.csv")
+
+amp$ID=as.factor(amp$ID)
+amp$Deviant=as.factor(amp$Deviant)
+amp$DeviantLevel=as.factor(amp$DeviantLevel)
+amp$Group=as.factor(amp$Group)
+amp = rename(amp, c("Round" = "Time"))
 
 amp_all$ID=as.factor(amp_all$ID)
 amp_all$Deviant=as.factor(amp_all$Deviant)
 amp_all$DeviantLevel=as.factor(amp_all$DeviantLevel)
 amp_all$Group=as.factor(amp_all$Group)
 
+lat$ID=as.factor(lat$ID)
+lat$Deviant=as.factor(lat$Deviant)
+lat$DeviantLevel=as.factor(lat$DeviantLevel)
+lat$Group=as.factor(lat$Group)
+lat = rename(lat, c("Round" = "Time"))
+
 lat_all$ID=as.factor(lat_all$ID)
 lat_all$Deviant=as.factor(lat_all$Deviant)
 lat_all$DeviantLevel=as.factor(lat_all$DeviantLevel)
 lat_all$Group=as.factor(lat_all$Group)
+
+All_behav$ID=as.factor(All_behav$ID)
+All_behav$Deviant=as.factor(All_behav$Deviant)
+All_behav$DeviantLevel=as.factor(All_behav$DeviantLevel)
+All_behav$Group=as.factor(All_behav$Group)
                         
                       
 ```
 
-### Hierarchical mixed effects modeling - MMN Amplitude (T2)
+# Hierarchical mixed effects modeling - MMN Amplitude (T2)
 ```{r}
 M0=lmer(Amplitude.T2~1+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
 
@@ -44,28 +66,181 @@ M6=lmer(Amplitude.T2~Deviant*DeviantLevel+Deviant*Group+DeviantLevel*Group+(1|ID
 
 M7=lmer(Amplitude.T2~Deviant*Group*DeviantLevel+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
 
+#comparing models
 anova(M0,M1,M2,M3,M4,M5,M6,M7)
 ```
 
-### Best model
+## Best model
 ```{r}
 qqnorm(resid(M4))
 plot(M4)
 ```
 
-
+## Post-hoc analysis
 ```{r}
+emm_g <- emmeans(M4, pairwise ~ Group)
+emm_gc <- emm_g[[2]]
 
+emm_d <- emmeans(M4, pairwise ~ Deviant)
+emm_dc <- emm_d[[2]]
+
+#Group by deviant interaction
+
+emm_g.d <- emmeans(M4, pairwise ~ Group | Deviant)
+IC_g.d <- contrast(emm_g.d[[1]], method = "pairwise")
+
+emm_d.g <- emmeans(M4, pairwise ~ Deviant | Group)
+IC_d.g <- contrast(emm_d.g[[1]], method = "pairwise")
+
+rbind(emm_gc, emm_dc, IC_g.d[1:4], IC_d.g[1:12], adjust = "mvt")
+rbind(IC_g.d[1:4], adjust = "mvt")
+rbind(IC_g.d[1:4], adjust = "none")
+rbind(IC_g.d[c(1,2,4)], adjust = "none")
+IC_g.d[1:4]
+IC_d.g[1:12]
+
+
+IC_IC_d.g <- contrast(emm_d.g[[1]], interaction = c("pairwise", "consec"), by = NULL)
+#rbind(IC_IC_d.g[1:6], adjust = "bonferroni")
 ```
 
-
+## Plot
 ```{r}
+amp_dummy = amp_all[amp_all$Group==c("NH_old","CI_ex"),]
+amp_dummy$Time = "T1"
+amp_dummy = rename(amp_dummy, c("Amplitude.T1" = "Amplitude"))
+amp_dummy = within(amp_dummy, rm("Amplitude.T2"))
+plot_data= rbind(amp_dummy, amp)
+ID_plot_data = aggregate(plot_data$Amplitude, by = list(plot_data$Group, plot_data$ID, plot_data$Time, plot_data$Deviant), mean)
+ID_plot_data = rename(ID_plot_data, c("Group.1" = "Group", "Group.2" = "ID", "Group.3" = "Time", "Group.4" = "Deviant", "x" = "Amp"))
+sum_plot_data = aggregate(plot_data$Amplitude, by = list(plot_data$Group, plot_data$Time, plot_data$Deviant), mean)
+sum_plot_data = rename(sum_plot_data, c("Group.1" = "Group", "Group.2" = "Time", "Group.3" = "Deviant", "x" = "Amp"))
 
+ID_plot_data$Group=gsub("NH_old", "NH", ID_plot_data$Group)
+ID_plot_data$Group=gsub("CI_ex", "CIex", ID_plot_data$Group)
+ID_plot_data$Time=gsub("T1", "CIre_T1", ID_plot_data$Time)
+ID_plot_data$Time=gsub("T2", "CIre_T2", ID_plot_data$Time)
+sum_plot_data$Group=gsub("NH_old", "NH", sum_plot_data$Group)
+sum_plot_data$Group=gsub("CI_ex", "CIex", sum_plot_data$Group)
+sum_plot_data$Time=gsub("T1", "CIre_T1", sum_plot_data$Time)
+sum_plot_data$Time=gsub("T2", "CIre_T2", sum_plot_data$Time)
+
+pirat = ID_plot_data
+pirat$Group[pirat$Time =="CIre_T1"]=gsub("CI_re", "CIre_T1", pirat$Group[pirat$Time =="CIre_T1"])
+pirat$Group[pirat$Time =="CIre_T2"]=gsub("CI_re", "CIre_T2", pirat$Group[pirat$Time =="CIre_T2"])
+pirat$Group=ordered(pirat$Group, levels=c("CIre_T1", "CIre_T2", "CIex", "NH"))
+pirat$Deviant=ordered(pirat$Deviant, levels=c("Intensity", "Pitch", "Timbre", "Rhythm"))
+
+pirateplot(formula = Amp ~ Group + Deviant, data = pirat, main = "EEG (MMN-amplitude)", xlab = "group",ylab="Amplitude", ylim= c(-1.8,0.4), theme=2, pal="appletv", cex.lab = 1, cex.axis = 1, cex.names = 0.7, avg.line.o=0.8, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white") +
+  abline(a=0, b=0, lwd=1, lty="dashed")
 ```
 
-
+# Hierarchical mixed effects modeling - Latency (T2)
 ```{r}
+M0=lmer(Latency_peak.T2~1+(1|ID), data=lat_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
 
+M1=lmer(Latency_peak.T2~Deviant+(1|ID), data=lat_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M2=lmer(Latency_peak.T2~Deviant+DeviantLevel+(1|ID), data=lat_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M3=lmer(Latency_peak.T2~Deviant+DeviantLevel+Group+(1|ID), data=lat_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M4=lmer(Latency_peak.T2~Deviant*DeviantLevel+Group+(1|ID), data=lat_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M5=lmer(Latency_peak.T2~Deviant*DeviantLevel+Deviant*Group+(1|ID), data=lat_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M6=lmer(Latency_peak.T2~Deviant*DeviantLevel+Deviant*Group+DeviantLevel*Group+(1|ID), data=lat_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M7=lmer(Latency_peak.T2~Deviant*DeviantLevel*Group+(1|ID), data=lat_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+#comparing models
+anova(M0,M1,M2,M3,M4,M5,M6, M7)
+```
+
+## Best model
+```{r}
+qqnorm(resid(M5))
+plot(M5)
+```
+## Plot
+```{r}
+# saparate aggregates per factor on the x-axis
+lat_dummy = lat_all[lat_all$Group==c("NH_old","CI_ex"),]
+lat_dummy$Time = "T1"
+lat_dummy = rename(lat_dummy, c("Latency_peak.T1" = "Latency_peak"))
+lat_dummy = within(lat_dummy, rm("Latency_peak.T2"))
+plot_data= rbind(lat_dummy, lat)
+ID_plot_data = aggregate(plot_data$Latency_peak, by = list(plot_data$Group, plot_data$ID, plot_data$Time, plot_data$Deviant), mean)
+ID_plot_data = rename(ID_plot_data, c("Group.1" = "Group", "Group.2" = "ID", "Group.3" = "Time", "Group.4" = "Deviant", "x" = "Lat"))
+
+
+sum_plot_data = aggregate(plot_data$Latency_peak, by = list(plot_data$Group, plot_data$Time, plot_data$Deviant), mean)
+sum_plot_data = rename(sum_plot_data, c("Group.1" = "Group", "Group.2" = "Time", "Group.3" = "Deviant", "x" = "Lat"))
+NH_ID = ID_plot_data[ID_plot_data$Group=="NH_old",]
+NH_sum = sum_plot_data[sum_plot_data$Group=="NH_old",]
+
+CIex_ID = ID_plot_data[ID_plot_data$Group=="CI_ex",]
+CIex_sum = sum_plot_data[sum_plot_data$Group=="CI_ex",]
+
+CIre_ID = ID_plot_data[ID_plot_data$Group==c("CI_re"),]
+CIre_sum = sum_plot_data[sum_plot_data$Group==c("CI_re"),]
+
+ID_plot_data$Group=gsub("NH_old", "NH", ID_plot_data$Group)
+ID_plot_data$Group=gsub("CI_ex", "CIex", ID_plot_data$Group)
+ID_plot_data$Time=gsub("T1", "CIre_T1", ID_plot_data$Time)
+ID_plot_data$Time=gsub("T2", "CIre_T2", ID_plot_data$Time)
+sum_plot_data$Group=gsub("NH_old", "NH", sum_plot_data$Group)
+sum_plot_data$Group=gsub("CI_ex", "CIex", sum_plot_data$Group)
+sum_plot_data$Time=gsub("T1", "CIre_T1", sum_plot_data$Time)
+sum_plot_data$Time=gsub("T2", "CIre_T2", sum_plot_data$Time)
+
+pirat = ID_plot_data
+pirat$Group[pirat$Time =="CIre_T1"]=gsub("CI_re", "CIre_T1", pirat$Group[pirat$Time =="CIre_T1"])
+pirat$Group[pirat$Time =="CIre_T2"]=gsub("CI_re", "CIre_T2", pirat$Group[pirat$Time =="CIre_T2"])
+pirat$Group=ordered(pirat$Group, levels=c("CIre_T1", "CIre_T2", "CIex", "NH"))
+pirat$Deviant=ordered(pirat$Deviant, levels=c("Intensity", "Pitch", "Timbre", "Rhythm"))
+
+pirateplot(formula = Lat ~ Group + Deviant, data = pirat, main = "EEG (Latency)", xlab = "group",ylab="Latency", ylim= c(100,250), theme=2, pal="appletv", cex.lab = 1, cex.axis = 1, cex.names = 0.7, avg.line.o=0.8, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white")
+```
+
+# Hierarchical mixed effects modeling - Behavioral (T2)
+```{r}
+M0=glmer(cbind(AvCor*6,6)~1+(1|ID), data=All_behav[All_behav$Group!="CIre_T1",], family="binomial", control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M1=glmer(cbind(AvCor*6,6)~Deviant+(1|ID), data=All_behav[All_behav$Group!="CIre_T1",], family="binomial", control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M2=glmer(cbind(AvCor*6,6)~Deviant+DeviantLevel+(1|ID), data=All_behav[All_behav$Group!="CIre_T1",], family="binomial", control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M3=glmer(cbind(AvCor*6,6)~Deviant+DeviantLevel+Group+(1|ID), data=All_behav[All_behav$Group!="CIre_T1",], family="binomial", control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M4=glmer(cbind(AvCor*6,6)~Deviant*DeviantLevel+Group+(1|ID), data=All_behav[All_behav$Group!="CIre_T1",], family="binomial", control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M5=glmer(cbind(AvCor*6,6)~Deviant*DeviantLevel+Deviant*Group+(1|ID), data=All_behav[All_behav$Group!="CIre_T1",], family="binomial", control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M6=glmer(cbind(AvCor*6,6)~Deviant*DeviantLevel+Deviant*Group+DeviantLevel*Group+(1|ID), data=All_behav[All_behav$Group!="CIre_T1",], family="binomial", control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M7=glmer(cbind(AvCor*6,6)~Deviant*DeviantLevel*Group+(1|ID), data=All_behav[All_behav$Group!="CIre_T1",], family="binomial", control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+
+
+#Comparing models 
+anova(M0, M1, M2, M3, M4, M5, M6, M7)
+```
+
+## Plots behavioral
+```{r}
+plot_data = All_behav
+ID_plot_data = aggregate(plot_data$AvCor, by = list(plot_data$Group, plot_data$ID, plot_data$Round, plot_data$Deviant), mean)
+ID_plot_data = rename(ID_plot_data, c("Group.1" = "Group", "Group.2" = "ID", "Group.3" = "Round", "Group.4" = "Deviant", "x" = "AvCor"))
+sum_plot_data = aggregate(plot_data$AvCor, by = list(plot_data$Group, plot_data$Round, plot_data$Deviant), mean)
+sum_plot_data = rename(sum_plot_data, c("Group.1" = "Group", "Group.2" = "Round", "Group.3" = "Deviant", "x" = "AvCor"))
+
+ID_plot_data$Group=ordered(ID_plot_data$Group, levels=c("CIre_T1", "CIre_T2", "CIex", "NH"))
+ID_plot_data$Deviant=ordered(ID_plot_data$Deviant, levels=c("Intensity", "Pitch", "Timbre", "Rhythm"))
+
+## Creating pirateplot
+pirateplot(formula = AvCor ~ Group + Deviant, data = ID_plot_data, main = "Behavioral (average correct)", xlab = "group",ylab="Average % correct", ylim= c(0,100), theme=2, pal="appletv", cex.lab = 1, cex.axis = 1, cex.names = 0.7, avg.line.o=0.8, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white") +
+  abline(a=33,33, b=0, lwd=1, lty="dashed")
 ```
 
 
