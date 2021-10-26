@@ -5,7 +5,7 @@ output: html_document
 
 #Load packages
 ```{r}
-pacman::p_load(lme4, ggplot2)
+pacman::p_load(lme4, emmeans)
 ```
 
 #Load data
@@ -54,6 +54,34 @@ summary(M5)
 qqnorm(resid(M5))
 plot(M5)
 ```
+#Post-hoc analysis
+```{r}
+emm_r <- emmeans(M5, pairwise ~ Time)
+emm_rc <- emm_r[[2]]
+
+emm_d <- emmeans(M5, pairwise ~ Deviant)
+emm_dc <- emm_d[[2]]
+
+#Time by deviant interaction
+
+emm_r.d <- emmeans(M5, pairwise ~ Time | Deviant)
+IC_r.d <- contrast(emm_r.d[[1]], method = "pairwise")
+
+emm_d.r <- emmeans(M5, pairwise ~ Deviant | Time)
+IC_d.r <- contrast(emm_d.r[[1]], method = "pairwise")
+
+rbind(emm_rc, emm_dc, IC_r.d[1:4], IC_d.r[1:12], adjust = "mvt")
+rbind(IC_r.d[1:4], adjust = "mvt")
+rbind(IC_r.d[1:4], adjust = "none")
+rbind(IC_r.d[c(1,2,4)], adjust = "none")
+IC_r.d[1:4]
+IC_d.r[1:12]
+
+IC_d.r[c(1,3,7,9)]
+
+IC_IC_d.r <- contrast(emm_d.r[[1]], interaction = c("pairwise", "consec"), by = NULL)
+rbind(IC_IC_d.r[1:6], adjust = "bonferroni")
+```
 
 #Hierarchical mixed effects modeling - 3-AFC (Behavioral)
 ```{r}
@@ -72,6 +100,10 @@ M5=glmer(cbind(AvCor*6,6)~Deviant*DeviantLevel+Deviant*Time+(1|ID), data=long, f
 M6=glmer(cbind(AvCor*6,6)~Deviant*DeviantLevel+Deviant*Time+DeviantLevel*Time+(1|ID), data=long, family="binomial", control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
 
 anova(M0,M1,M2,M3,M4,M5,M6)
+```
+#Best model
+```{r}
+summary(M2)
 ```
 
 #Hierarchical mixed effects modeling - Latency

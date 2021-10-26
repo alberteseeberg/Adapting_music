@@ -3,23 +3,53 @@ title: "CI_group_analysis"
 output: html_document
 ---
 
+#Load packages
 ```{r}
-
+pacman::p_load(lme4, emmeans, yarrr, ggplot2)
 ```
 
 
 ```{r}
+amp_all = read_csv("amp_all.csv")
+lat_all = read_csv("lat_all.csv")
 
+amp_all$ID=as.factor(amp_all$ID)
+amp_all$Deviant=as.factor(amp_all$Deviant)
+amp_all$DeviantLevel=as.factor(amp_all$DeviantLevel)
+amp_all$Group=as.factor(amp_all$Group)
+
+lat_all$ID=as.factor(lat_all$ID)
+lat_all$Deviant=as.factor(lat_all$Deviant)
+lat_all$DeviantLevel=as.factor(lat_all$DeviantLevel)
+lat_all$Group=as.factor(lat_all$Group)
+                        
+                      
 ```
 
-
+#Hierarchical mixed effects modeling - MMN Amplitude (T1)
 ```{r}
+M0=lmer(Amplitude.T1~1+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
 
+M1=lmer(Amplitude.T1~Deviant+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M2=lmer(Amplitude.T1~Deviant+DeviantLevel+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M3=lmer(Amplitude.T1~Deviant+DeviantLevel+Group+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M4=lmer(Amplitude.T1~Deviant*DeviantLevel+Group+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M5=lmer(Amplitude.T1~Deviant*DeviantLevel+Deviant*Group+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M6=lmer(Amplitude.T1~Deviant*DeviantLevel+Deviant*Group+DeviantLevel*Group+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+
+anova(M0,M1,M2,M3,M4,M5,M6)
 ```
 
-
+#Best model
 ```{r}
-
+qqnorm(resid(M4))
+plot(M4)
 ```
 
 
