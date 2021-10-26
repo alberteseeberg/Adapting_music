@@ -1,6 +1,6 @@
 ## Adapting to the sound of music - music discrimination skills in recently implanted cochlear implant users
 
-This you can find the scripts used for the analyses in the paper. A link to the paper can be found [here](https://www.google.com).
+Here you can find the scripts used for the analyses in the paper. The paper can be found [here](https://www.google.com).
 
 Everything is coded using *R*. 
 
