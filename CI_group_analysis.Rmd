@@ -1,5 +1,5 @@
 ---
-title: "CI_group_analysis"
+title: "Group analysis"
 output:
   pdf_document: default
   html_document: default
