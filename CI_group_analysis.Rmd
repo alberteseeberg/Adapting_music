@@ -1,20 +1,20 @@
 ---
 title: "CI_group_analysis"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 # Load packages
 ```{r}
-pacman::p_load(readr, lme4, emmeans, yarrr, ggplot2)
+pacman::p_load(readr, lme4, emmeans, yarrr, ggplot2, dplyr)
 ```
 
 # Load data
 ```{r}
 amp = read_csv("amp.csv")
-amp = amp[-1]
 amp_all = read_csv("amp_all.csv")
 lat = read_csv("lat.csv")
-lat=lat[-1]
 lat_all = read_csv("lat_all.csv")
 All_behav = read_csv("All_behav.csv")
 
@@ -22,7 +22,6 @@ amp$ID=as.factor(amp$ID)
 amp$Deviant=as.factor(amp$Deviant)
 amp$DeviantLevel=as.factor(amp$DeviantLevel)
 amp$Group=as.factor(amp$Group)
-amp = rename(amp, c("Round" = "Time"))
 
 amp_all$ID=as.factor(amp_all$ID)
 amp_all$Deviant=as.factor(amp_all$Deviant)
@@ -33,7 +32,6 @@ lat$ID=as.factor(lat$ID)
 lat$Deviant=as.factor(lat$Deviant)
 lat$DeviantLevel=as.factor(lat$DeviantLevel)
 lat$Group=as.factor(lat$Group)
-lat = rename(lat, c("Round" = "Time"))
 
 lat_all$ID=as.factor(lat_all$ID)
 lat_all$Deviant=as.factor(lat_all$Deviant)
@@ -92,38 +90,21 @@ IC_g.d <- contrast(emm_g.d[[1]], method = "pairwise")
 emm_d.g <- emmeans(M4, pairwise ~ Deviant | Group)
 IC_d.g <- contrast(emm_d.g[[1]], method = "pairwise")
 
-rbind(emm_gc, emm_dc, IC_g.d[1:4], IC_d.g[1:12], adjust = "mvt")
-rbind(IC_g.d[1:4], adjust = "mvt")
-rbind(IC_g.d[1:4], adjust = "none")
-rbind(IC_g.d[c(1,2,4)], adjust = "none")
-IC_g.d[1:4]
-IC_d.g[1:12]
-
-
-IC_IC_d.g <- contrast(emm_d.g[[1]], interaction = c("pairwise", "consec"), by = NULL)
+# rbind(emm_gc, emm_dc, IC_g.d[1:4], IC_d.g[1:12], adjust = "mvt")
+# rbind(IC_g.d[1:4], adjust = "mvt")
+# rbind(IC_g.d[1:4], adjust = "none")
+# rbind(IC_g.d[c(1,2,4)], adjust = "none")
+# IC_g.d[1:4]
+# IC_d.g[1:12]
+# 
+# 
+# IC_IC_d.g <- contrast(emm_d.g[[1]], interaction = c("pairwise", "consec"), by = NULL)
 #rbind(IC_IC_d.g[1:6], adjust = "bonferroni")
 ```
 
 ## Plot
 ```{r}
-amp_dummy = amp_all[amp_all$Group==c("NH_old","CI_ex"),]
-amp_dummy$Time = "T1"
-amp_dummy = rename(amp_dummy, c("Amplitude.T1" = "Amplitude"))
-amp_dummy = within(amp_dummy, rm("Amplitude.T2"))
-plot_data= rbind(amp_dummy, amp)
-ID_plot_data = aggregate(plot_data$Amplitude, by = list(plot_data$Group, plot_data$ID, plot_data$Time, plot_data$Deviant), mean)
-ID_plot_data = rename(ID_plot_data, c("Group.1" = "Group", "Group.2" = "ID", "Group.3" = "Time", "Group.4" = "Deviant", "x" = "Amp"))
-sum_plot_data = aggregate(plot_data$Amplitude, by = list(plot_data$Group, plot_data$Time, plot_data$Deviant), mean)
-sum_plot_data = rename(sum_plot_data, c("Group.1" = "Group", "Group.2" = "Time", "Group.3" = "Deviant", "x" = "Amp"))
-
-ID_plot_data$Group=gsub("NH_old", "NH", ID_plot_data$Group)
-ID_plot_data$Group=gsub("CI_ex", "CIex", ID_plot_data$Group)
-ID_plot_data$Time=gsub("T1", "CIre_T1", ID_plot_data$Time)
-ID_plot_data$Time=gsub("T2", "CIre_T2", ID_plot_data$Time)
-sum_plot_data$Group=gsub("NH_old", "NH", sum_plot_data$Group)
-sum_plot_data$Group=gsub("CI_ex", "CIex", sum_plot_data$Group)
-sum_plot_data$Time=gsub("T1", "CIre_T1", sum_plot_data$Time)
-sum_plot_data$Time=gsub("T2", "CIre_T2", sum_plot_data$Time)
+ID_plot_data = read_csv("ID_plot_data_amp.csv")
 
 pirat = ID_plot_data
 pirat$Group[pirat$Time =="CIre_T1"]=gsub("CI_re", "CIre_T1", pirat$Group[pirat$Time =="CIre_T1"])
@@ -164,35 +145,7 @@ plot(M5)
 ```
 ## Plot
 ```{r}
-# saparate aggregates per factor on the x-axis
-lat_dummy = lat_all[lat_all$Group==c("NH_old","CI_ex"),]
-lat_dummy$Time = "T1"
-lat_dummy = rename(lat_dummy, c("Latency_peak.T1" = "Latency_peak"))
-lat_dummy = within(lat_dummy, rm("Latency_peak.T2"))
-plot_data= rbind(lat_dummy, lat)
-ID_plot_data = aggregate(plot_data$Latency_peak, by = list(plot_data$Group, plot_data$ID, plot_data$Time, plot_data$Deviant), mean)
-ID_plot_data = rename(ID_plot_data, c("Group.1" = "Group", "Group.2" = "ID", "Group.3" = "Time", "Group.4" = "Deviant", "x" = "Lat"))
-
-
-sum_plot_data = aggregate(plot_data$Latency_peak, by = list(plot_data$Group, plot_data$Time, plot_data$Deviant), mean)
-sum_plot_data = rename(sum_plot_data, c("Group.1" = "Group", "Group.2" = "Time", "Group.3" = "Deviant", "x" = "Lat"))
-NH_ID = ID_plot_data[ID_plot_data$Group=="NH_old",]
-NH_sum = sum_plot_data[sum_plot_data$Group=="NH_old",]
-
-CIex_ID = ID_plot_data[ID_plot_data$Group=="CI_ex",]
-CIex_sum = sum_plot_data[sum_plot_data$Group=="CI_ex",]
-
-CIre_ID = ID_plot_data[ID_plot_data$Group==c("CI_re"),]
-CIre_sum = sum_plot_data[sum_plot_data$Group==c("CI_re"),]
-
-ID_plot_data$Group=gsub("NH_old", "NH", ID_plot_data$Group)
-ID_plot_data$Group=gsub("CI_ex", "CIex", ID_plot_data$Group)
-ID_plot_data$Time=gsub("T1", "CIre_T1", ID_plot_data$Time)
-ID_plot_data$Time=gsub("T2", "CIre_T2", ID_plot_data$Time)
-sum_plot_data$Group=gsub("NH_old", "NH", sum_plot_data$Group)
-sum_plot_data$Group=gsub("CI_ex", "CIex", sum_plot_data$Group)
-sum_plot_data$Time=gsub("T1", "CIre_T1", sum_plot_data$Time)
-sum_plot_data$Time=gsub("T2", "CIre_T2", sum_plot_data$Time)
+ID_plot_data = read_csv("ID_plot_data_lat.csv")
 
 pirat = ID_plot_data
 pirat$Group[pirat$Time =="CIre_T1"]=gsub("CI_re", "CIre_T1", pirat$Group[pirat$Time =="CIre_T1"])
@@ -229,11 +182,7 @@ anova(M0, M1, M2, M3, M4, M5, M6, M7)
 
 ## Plots behavioral
 ```{r}
-plot_data = All_behav
-ID_plot_data = aggregate(plot_data$AvCor, by = list(plot_data$Group, plot_data$ID, plot_data$Round, plot_data$Deviant), mean)
-ID_plot_data = rename(ID_plot_data, c("Group.1" = "Group", "Group.2" = "ID", "Group.3" = "Round", "Group.4" = "Deviant", "x" = "AvCor"))
-sum_plot_data = aggregate(plot_data$AvCor, by = list(plot_data$Group, plot_data$Round, plot_data$Deviant), mean)
-sum_plot_data = rename(sum_plot_data, c("Group.1" = "Group", "Group.2" = "Round", "Group.3" = "Deviant", "x" = "AvCor"))
+ID_plot_data = read_csv("ID_plot_data_behav.csv")
 
 ID_plot_data$Group=ordered(ID_plot_data$Group, levels=c("CIre_T1", "CIre_T2", "CIex", "NH"))
 ID_plot_data$Deviant=ordered(ID_plot_data$Deviant, levels=c("Intensity", "Pitch", "Timbre", "Rhythm"))
