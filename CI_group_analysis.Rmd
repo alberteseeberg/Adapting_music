@@ -3,7 +3,7 @@ title: "CI_group_analysis"
 output: html_document
 ---
 
-###Load packages
+### Load packages
 ```{r}
 pacman::p_load(lme4, emmeans, yarrr, ggplot2)
 ```
@@ -26,7 +26,7 @@ lat_all$Group=as.factor(lat_all$Group)
                       
 ```
 
-#Hierarchical mixed effects modeling - MMN Amplitude (T1)
+### Hierarchical mixed effects modeling - MMN Amplitude (T1)
 ```{r}
 M0=lmer(Amplitude.T1~1+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
 
@@ -46,7 +46,7 @@ M6=lmer(Amplitude.T1~Deviant*DeviantLevel+Deviant*Group+DeviantLevel*Group+(1|ID
 anova(M0,M1,M2,M3,M4,M5,M6)
 ```
 
-#Best model
+### Best model
 ```{r}
 qqnorm(resid(M4))
 plot(M4)
