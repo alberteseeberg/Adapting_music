@@ -5,7 +5,7 @@ output: html_document
 
 ### Load packages
 ```{r}
-pacman::p_load(lme4, emmeans, yarrr, ggplot2)
+pacman::p_load(readr, lme4, emmeans, yarrr, ggplot2)
 ```
 
 
@@ -26,24 +26,25 @@ lat_all$Group=as.factor(lat_all$Group)
                       
 ```
 
-### Hierarchical mixed effects modeling - MMN Amplitude (T1)
+### Hierarchical mixed effects modeling - MMN Amplitude (T2)
 ```{r}
-M0=lmer(Amplitude.T1~1+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+M0=lmer(Amplitude.T2~1+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
 
-M1=lmer(Amplitude.T1~Deviant+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+M1=lmer(Amplitude.T2~Deviant+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
 
-M2=lmer(Amplitude.T1~Deviant+DeviantLevel+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+M2=lmer(Amplitude.T2~Deviant+DeviantLevel+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
 
-M3=lmer(Amplitude.T1~Deviant+DeviantLevel+Group+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+M3=lmer(Amplitude.T2~Deviant+DeviantLevel+Group+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
 
-M4=lmer(Amplitude.T1~Deviant*DeviantLevel+Group+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+M4=lmer(Amplitude.T2~Deviant*DeviantLevel+Group+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
 
-M5=lmer(Amplitude.T1~Deviant*DeviantLevel+Deviant*Group+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+M5=lmer(Amplitude.T2~Deviant*DeviantLevel+Deviant*Group+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
 
-M6=lmer(Amplitude.T1~Deviant*DeviantLevel+Deviant*Group+DeviantLevel*Group+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+M6=lmer(Amplitude.T2~Deviant*DeviantLevel+Deviant*Group+DeviantLevel*Group+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
 
+M7=lmer(Amplitude.T2~Deviant*Group*DeviantLevel+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
 
-anova(M0,M1,M2,M3,M4,M5,M6)
+anova(M0,M1,M2,M3,M4,M5,M6,M7)
 ```
 
 ### Best model

@@ -43,7 +43,6 @@ M5=lmer(Amplitude~Deviant*DeviantLevel+Deviant*Time+(1|ID), data=long, REML = FA
 M6=lmer(Amplitude~Deviant*DeviantLevel+Deviant*Time+DeviantLevel*Time+(1|ID), data=long, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
 
 anova(M0,M1,M2,M3,M4,M5,M6)
-
 ```
 
 #Best model
@@ -101,6 +100,7 @@ M6=glmer(cbind(AvCor*6,6)~Deviant*DeviantLevel+Deviant*Time+DeviantLevel*Time+(1
 
 anova(M0,M1,M2,M3,M4,M5,M6)
 ```
+
 #Best model
 ```{r}
 summary(M2)
@@ -124,19 +124,4 @@ M6=lmer(Latency_peak~Deviant*DeviantLevel+Deviant*Time+DeviantLevel*Time+(1|ID),
 
 
 anova(M0,M1,M2,M3,M4,M5,M6)
-```
-
-
-```{r}
-
-```
-
-
-```{r}
-
-```
-
-
-```{r}
-
 ```
