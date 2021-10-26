@@ -55,6 +55,7 @@ summary(M5)
 qqnorm(resid(M5))
 plot(M5)
 ```
+
 ## Post-hoc analysis
 ```{r}
 emm_r <- emmeans(M5, pairwise ~ Time)
