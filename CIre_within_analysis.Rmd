@@ -1,14 +1,16 @@
 ---
-title: "CI_re_within_analysis"
-output: html_document
+title: "CIre within analysis"
+output:
+  pdf_document: default
+  html_document: default
 ---
 
-#Load packages
+# Load packages
 ```{r}
-pacman::p_load(lme4, emmeans)
+pacman::p_load(readr, lme4, emmeans)
 ```
 
-#Load data
+# Load data
 ```{r}
 long = read_csv("long.csv")
 
@@ -26,7 +28,7 @@ change_all$DeviantLevel=as.factor(change_all$DeviantLevel)
 change_all$ID=as.factor(change_all$ID)
 ```
 
-#Hierarchical mixed effects modeling - MMN Amplitude
+# Hierarchical mixed effects modeling - MMN Amplitude
 ```{r}
 M0=lmer(Amplitude~1+(1|ID), data=long, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
 
@@ -45,7 +47,7 @@ M6=lmer(Amplitude~Deviant*DeviantLevel+Deviant*Time+DeviantLevel*Time+(1|ID), da
 anova(M0,M1,M2,M3,M4,M5,M6)
 ```
 
-#Best model
+## Best model
 ```{r}
 summary(M5)
 
@@ -53,7 +55,7 @@ summary(M5)
 qqnorm(resid(M5))
 plot(M5)
 ```
-#Post-hoc analysis
+## Post-hoc analysis
 ```{r}
 emm_r <- emmeans(M5, pairwise ~ Time)
 emm_rc <- emm_r[[2]]
@@ -82,7 +84,7 @@ IC_IC_d.r <- contrast(emm_d.r[[1]], interaction = c("pairwise", "consec"), by = 
 rbind(IC_IC_d.r[1:6], adjust = "bonferroni")
 ```
 
-#Hierarchical mixed effects modeling - 3-AFC (Behavioral)
+# Hierarchical mixed effects modeling - 3-AFC (Behavioral)
 ```{r}
 M0=glmer(cbind(AvCor*6,6)~1+(1|ID), data=long, family="binomial", control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
 
@@ -101,12 +103,12 @@ M6=glmer(cbind(AvCor*6,6)~Deviant*DeviantLevel+Deviant*Time+DeviantLevel*Time+(1
 anova(M0,M1,M2,M3,M4,M5,M6)
 ```
 
-#Best model
+## Best model
 ```{r}
 summary(M2)
 ```
 
-#Hierarchical mixed effects modeling - Latency
+# Hierarchical mixed effects modeling - Latency
 ```{r}
 M0=lmer(Latency_peak~1+(1|ID), data=long, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
 
