@@ -76,30 +76,8 @@ plot(M4)
 
 ## Post-hoc analysis
 ```{r}
-emm_g <- emmeans(M4, pairwise ~ Group)
-emm_gc <- emm_g[[2]]
-
-emm_d <- emmeans(M4, pairwise ~ Deviant)
-emm_dc <- emm_d[[2]]
-
-#Group by deviant interaction
-
-emm_g.d <- emmeans(M4, pairwise ~ Group | Deviant)
-IC_g.d <- contrast(emm_g.d[[1]], method = "pairwise")
-
-emm_d.g <- emmeans(M4, pairwise ~ Deviant | Group)
-IC_d.g <- contrast(emm_d.g[[1]], method = "pairwise")
-
-# rbind(emm_gc, emm_dc, IC_g.d[1:4], IC_d.g[1:12], adjust = "mvt")
-# rbind(IC_g.d[1:4], adjust = "mvt")
-# rbind(IC_g.d[1:4], adjust = "none")
-# rbind(IC_g.d[c(1,2,4)], adjust = "none")
-# IC_g.d[1:4]
-# IC_d.g[1:12]
-# 
-# 
-# IC_IC_d.g <- contrast(emm_d.g[[1]], interaction = c("pairwise", "consec"), by = NULL)
-#rbind(IC_IC_d.g[1:6], adjust = "bonferroni")
+emm_g <- emmeans(M4, pairwise ~ Group, adjust = "bonferroni")
+emm_g[[2]]
 ```
 
 ## Plot
@@ -143,6 +121,29 @@ anova(M0,M1,M2,M3,M4,M5,M6, M7)
 qqnorm(resid(M5))
 plot(M5)
 ```
+
+## Post-hoc analysis
+```{r}
+
+emm_g <- emmeans(M5, pairwise ~ Group)
+emm_gc <- emm_g[[2]]
+
+emm_d <- emmeans(M5, pairwise ~ Deviant)
+emm_dc <- emm_d[[2]]
+
+#Group by deviant interaction
+
+emm_g.d <- emmeans(M5, pairwise ~ Group | Deviant)
+IC_g.d <- contrast(emm_g.d[[1]], method = "pairwise")
+
+#Tukey
+IC_g.d
+
+#Bonferroni
+rbind(IC_g.d, adjust = "bonferroni")
+```
+
+
 ## Plot
 ```{r}
 ID_plot_data = read_csv("ID_plot_data_lat.csv")
@@ -178,6 +179,27 @@ M7=glmer(cbind(AvCor*6,6)~Deviant*DeviantLevel*Group+(1|ID), data=All_behav[All_
 
 #Comparing models 
 anova(M0, M1, M2, M3, M4, M5, M6, M7)
+```
+
+## Post-hoc analysis
+```{r}
+
+emm_g <- emmeans(M5, pairwise ~ Group)
+emm_gc <- emm_g[[2]]
+
+emm_d <- emmeans(M5, pairwise ~ Deviant)
+emm_dc <- emm_d[[2]]
+
+#Group by deviant interaction
+
+emm_g.d <- emmeans(M5, pairwise ~ Group | Deviant)
+IC_g.d <- contrast(emm_g.d[[1]], method = "pairwise")
+
+#Tukey
+IC_g.d
+
+#Bonferroni
+rbind(IC_g.d, adjust = "bonferroni")
 ```
 
 ## Plots behavioral
