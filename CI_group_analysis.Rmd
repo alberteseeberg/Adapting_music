@@ -92,6 +92,9 @@ pirat$Deviant=ordered(pirat$Deviant, levels=c("Intensity", "Pitch", "Timbre", "R
 
 pirateplot(formula = Amp ~ Group + Deviant, data = pirat, main = "EEG (MMN-amplitude)", xlab = "group",ylab="Amplitude", ylim= c(-1.8,0.4), theme=2, pal="appletv", cex.lab = 1, cex.axis = 1, cex.names = 0.7, avg.line.o=0.8, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white") +
   abline(a=0, b=0, lwd=1, lty="dashed")
+
+pirateplot(formula = Amp ~ Group + Deviant, data = pirat, main = "EEG (MMN-amplitude)", xlab = "group",ylab="Amplitude", ylim= c(-1.8,0.4), theme=2, pal="appletv", avg.line.fun = median, inf.method = "ci", cex.lab = 1, cex.axis = 1, cex.names = 0.7, avg.line.o=0.8, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white") +
+  abline(a=0, b=0, lwd=1, lty="dashed")
 ```
 
 # Hierarchical mixed effects modeling - Latency (T2)
@@ -155,6 +158,8 @@ pirat$Group=ordered(pirat$Group, levels=c("CIre_T1", "CIre_T2", "CIex", "NH"))
 pirat$Deviant=ordered(pirat$Deviant, levels=c("Intensity", "Pitch", "Timbre", "Rhythm"))
 
 pirateplot(formula = Lat ~ Group + Deviant, data = pirat, main = "EEG (Latency)", xlab = "group",ylab="Latency", ylim= c(100,250), theme=2, pal="appletv", cex.lab = 1, cex.axis = 1, cex.names = 0.7, avg.line.o=0.8, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white")
+
+pirateplot(formula = Lat ~ Group + Deviant, data = pirat, main = "EEG (Latency)", xlab = "group",ylab="Latency", ylim= c(100,250), theme=2, pal="appletv", avg.line.fun = median, inf.method = "ci", cex.lab = 1, cex.axis = 1, cex.names = 0.7, avg.line.o=0.8, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white")
 ```
 
 # Hierarchical mixed effects modeling - Behavioral (T2)
@@ -211,6 +216,9 @@ ID_plot_data$Deviant=ordered(ID_plot_data$Deviant, levels=c("Intensity", "Pitch"
 
 ## Creating pirateplot
 pirateplot(formula = AvCor ~ Group + Deviant, data = ID_plot_data, main = "Behavioral (average correct)", xlab = "group",ylab="Average % correct", ylim= c(0,100), theme=2, pal="appletv", cex.lab = 1, cex.axis = 1, cex.names = 0.7, avg.line.o=0.8, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white") +
+  abline(a=33,33, b=0, lwd=1, lty="dashed")
+
+pirateplot(formula = AvCor ~ Group + Deviant, data = ID_plot_data, main = "Behavioral (average correct)", xlab = "group",ylab="Average % correct", ylim= c(0,100), theme=2, pal="appletv", avg.line.fun = median, inf.method = "ci", cex.lab = 1, cex.axis = 1, cex.names = 0.7, avg.line.o=0.8, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white") +
   abline(a=33,33, b=0, lwd=1, lty="dashed")
 ```
 
