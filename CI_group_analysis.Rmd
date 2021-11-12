@@ -7,7 +7,7 @@ output:
 
 # Load packages
 ```{r}
-pacman::p_load(readr, lme4, emmeans, yarrr, ggplot2, dplyr)
+pacman::p_load(readr, lme4, emmeans, yarrr, ggplot2, dplyr, sjPlot)
 ```
 
 # Load data
@@ -65,7 +65,14 @@ M6=lmer(Amplitude.T2~Deviant*DeviantLevel+Deviant*Group+DeviantLevel*Group+(1|ID
 M7=lmer(Amplitude.T2~Deviant*Group*DeviantLevel+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
 
 #comparing models
-anova(M0,M1,M2,M3,M4,M5,M6,M7)
+anova = anova(M0,M1,M2,M3,M4,M5,M6,M7)
+anova
+
+#export model output to word table
+ tab_df(anova,
+        alternate.rows = TRUE,
+        title = "Effect on MMN Amplitude",
+        file = "amp_between.doc")
 ```
 
 ## Best model
@@ -76,7 +83,7 @@ plot(M4)
 
 ## Post-hoc analysis
 ```{r}
-emm_g <- emmeans(M4, pairwise ~ Group, adjust = "bonferroni")
+emm_g <- emmeans(M4, pairwise ~ Group, adjust = "none")
 emm_g[[2]]
 ```
 
@@ -116,7 +123,14 @@ M6=lmer(Latency_peak.T2~Deviant*DeviantLevel+Deviant*Group+DeviantLevel*Group+(1
 M7=lmer(Latency_peak.T2~Deviant*DeviantLevel*Group+(1|ID), data=lat_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
 
 #comparing models
-anova(M0,M1,M2,M3,M4,M5,M6, M7)
+anova = anova(M0,M1,M2,M3,M4,M5,M6, M7)
+anova
+
+#export model output to word table
+ tab_df(anova,
+        alternate.rows = TRUE,
+        title = "Effect on MMN Latency",
+        file = "lat_between.doc")
 ```
 
 ## Best model
@@ -139,11 +153,8 @@ emm_dc <- emm_d[[2]]
 emm_g.d <- emmeans(M5, pairwise ~ Group | Deviant)
 IC_g.d <- contrast(emm_g.d[[1]], method = "pairwise")
 
-#Tukey
-IC_g.d
-
-#Bonferroni
-rbind(IC_g.d, adjust = "bonferroni")
+#No correction
+rbind(IC_g.d, adjust = "none")
 ```
 
 
@@ -183,7 +194,14 @@ M7=glmer(cbind(AvCor*6,6)~Deviant*DeviantLevel*Group+(1|ID), data=All_behav[All_
 
 
 #Comparing models 
-anova(M0, M1, M2, M3, M4, M5, M6, M7)
+anova = anova(M0, M1, M2, M3, M4, M5, M6, M7)
+anova
+
+#export model output to word table
+ tab_df(anova,
+        alternate.rows = TRUE,
+        title = "Effect on behavioral hit rates",
+        file = "behav_between.doc")
 ```
 
 ## Post-hoc analysis
@@ -200,11 +218,8 @@ emm_dc <- emm_d[[2]]
 emm_g.d <- emmeans(M5, pairwise ~ Group | Deviant)
 IC_g.d <- contrast(emm_g.d[[1]], method = "pairwise")
 
-#Tukey
-IC_g.d
-
 #Bonferroni
-rbind(IC_g.d, adjust = "bonferroni")
+rbind(IC_g.d, adjust = "none")
 ```
 
 ## Plots behavioral
