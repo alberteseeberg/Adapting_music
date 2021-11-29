@@ -26,7 +26,9 @@ amp$Group=as.factor(amp$Group)
 amp_all$ID=as.factor(amp_all$ID)
 amp_all$Deviant=as.factor(amp_all$Deviant)
 amp_all$DeviantLevel=as.factor(amp_all$DeviantLevel)
+amp_all$Group[amp_all$Group =="CI_ex"] = "CIx"
 amp_all$Group=as.factor(amp_all$Group)
+
 
 lat$ID=as.factor(lat$ID)
 lat$Deviant=as.factor(lat$Deviant)
@@ -36,12 +38,16 @@ lat$Group=as.factor(lat$Group)
 lat_all$ID=as.factor(lat_all$ID)
 lat_all$Deviant=as.factor(lat_all$Deviant)
 lat_all$DeviantLevel=as.factor(lat_all$DeviantLevel)
+lat_all$Group[lat_all$Group =="CI_ex"] = "CIx"
 lat_all$Group=as.factor(lat_all$Group)
+
 
 All_behav$ID=as.factor(All_behav$ID)
 All_behav$Deviant=as.factor(All_behav$Deviant)
 All_behav$DeviantLevel=as.factor(All_behav$DeviantLevel)
+All_behav$Group[All_behav$Group =="CIex"] = "CIx"
 All_behav$Group=as.factor(All_behav$Group)
+
                         
                       
 ```
@@ -68,41 +74,91 @@ M7=lmer(Amplitude.T2~Deviant*Group*DeviantLevel+(1|ID), data=amp_all, REML = FAL
 anova = anova(M0,M1,M2,M3,M4,M5,M6,M7)
 anova
 
-#export model output to word table
- tab_df(anova,
-        alternate.rows = TRUE,
-        title = "Effect on MMN Amplitude",
-        file = "amp_between.doc")
+```
+
+## Best model
+```{r}
+qqnorm(resid(M4))
+plot(M4)
+```
+
+## Post-hoc analysis
+```{r}
+emm_g <- emmeans(M4, pairwise ~ Group, adjust = "none")
+emm_g[[2]]
+
+confint(rbind(emm_g[[2]]), adjust ="none")
+
+
+#Per deviant - T2
+emm_r <- emmeans(M5, pairwise ~ Group)
+emm_rc <- emm_r[[2]]
+
+emm_d <- emmeans(M5, pairwise ~ Deviant)
+emm_dc <- emm_d[[2]]
+
+#Time by deviant interaction
+
+emm_r.d <- emmeans(M5, pairwise ~ Group | Deviant)
+IC_r.d <- contrast(emm_r.d[[1]], method = "pairwise")
+
+emm_d.r <- emmeans(M5, pairwise ~ Deviant | Group)
+IC_d.r <- contrast(emm_d.r[[1]], method = "pairwise")
+
+rbind(IC_r.d[c(4:6,10:12)], adjust = "none")
+
+confint(rbind(IC_r.d[c(4:6,10:12)],  adjust = 'none'))
+
+```
+
+# Hierarchical mixed effects modeling - MMN Amplitude (T1)
+```{r}
+M0=lmer(Amplitude.T1~1+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M1=lmer(Amplitude.T1~Deviant+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M2=lmer(Amplitude.T1~Deviant+DeviantLevel+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M3=lmer(Amplitude.T1~Deviant+DeviantLevel+Group+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M4=lmer(Amplitude.T1~Deviant*DeviantLevel+Group+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M5=lmer(Amplitude.T1~Deviant*DeviantLevel+Deviant*Group+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M6=lmer(Amplitude.T1~Deviant*DeviantLevel+Deviant*Group+DeviantLevel*Group+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+M7=lmer(Amplitude.T1~Deviant*Group*DeviantLevel+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+
+#comparing models
+anova = anova(M0,M1,M2,M3,M4,M5,M6,M7)
+anova
+
 ```
 ```{r}
-# emm_r <- emmeans(M5, pairwise ~ Group)
-# emm_rc <- emm_r[[2]]
-# 
-# emm_d <- emmeans(M5, pairwise ~ Deviant)
-# emm_dc <- emm_d[[2]]
-# 
-# #Time by deviant interaction
-# 
-# emm_r.d <- emmeans(M5, pairwise ~ Group | Deviant)
-# IC_r.d <- contrast(emm_r.d[[1]], method = "pairwise")
-# 
-# emm_d.r <- emmeans(M5, pairwise ~ Deviant | Group)
-# IC_d.r <- contrast(emm_d.r[[1]], method = "pairwise")
-# 
-# # rbind(emm_rc, emm_dc, IC_r.d[1:4], IC_d.r[1:12], adjust = "mvt")
-# # rbind(IC_r.d[1:4], adjust = "mvt")
-# # rbind(IC_r.d[1:4], adjust = "none")
-# rbind(IC_r.d[c(1,2,4)], adjust = "none")
-# # IC_r.d[1:4]
-# # IC_d.r[1:12]
-# confint(rbind(IC_r.d[c(1,2,4)],  adjust = 'none'))
-# 
-# # IC_d.r[c(1,3,7,9)]
-# 
-# IC_IC_d.r <- contrast(emm_d.r[[1]], interaction = c("pairwise", "consec"), by = NULL)
-# rbind(IC_IC_d.r[1:6], adjust = "none")
-# 
-# confint(rbind(IC_IC_d.r[1:6],  adjust = 'none'))
+emm_r <- emmeans(M5, pairwise ~ Group)
+emm_rc <- emm_r[[2]]
+
+emm_d <- emmeans(M5, pairwise ~ Deviant)
+emm_dc <- emm_d[[2]]
+
+#Per deviant - T1
+emm_r <- emmeans(M5, pairwise ~ Group)
+emm_rc <- emm_r[[2]]
+
+emm_d <- emmeans(M5, pairwise ~ Deviant)
+emm_dc <- emm_d[[2]]
+
+#Time by deviant interaction
+
+emm_r.d <- emmeans(M5, pairwise ~ Group | Deviant)
+IC_r.d <- contrast(emm_r.d[[1]], method = "pairwise")
+
+emm_d.r <- emmeans(M5, pairwise ~ Deviant | Group)
+IC_d.r <- contrast(emm_d.r[[1]], method = "pairwise")
+
+rbind(IC_r.d[c(4:6,10:12)], adjust = "none")
+
+confint(rbind(IC_r.d[c(4:6,10:12)],  adjust = 'none'))
 ```
 
 
@@ -130,11 +186,11 @@ pirat$Group[pirat$Time =="CIre_T2"]=gsub("CI_re", "CIre_T2", pirat$Group[pirat$T
 pirat$Group=ordered(pirat$Group, levels=c("CIre_T1", "CIre_T2", "CIex", "NH"))
 pirat$Deviant=ordered(pirat$Deviant, levels=c("Intensity", "Pitch", "Timbre", "Rhythm"))
 
-pirateplot(formula = Amp ~ Group + Deviant, data = pirat, main = "EEG (MMN-amplitude)", xlab = "group",ylab="Amplitude", ylim= c(-1.8,0.4), theme=2, pal="appletv", cex.lab = 1, cex.axis = 1, cex.names = 0.7, avg.line.o=0.8, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white") +
+pirateplot(formula = Amp ~ Group + Deviant, data = pirat, main = "EEG (MMN-amplitude)", xlab = "Group",ylab="Amplitude (µV)", ylim= c(-1.8,0.4), theme=2, pal="appletv", cex.lab = 1, cex.axis = 1, cex.names = 0.7, avg.line.o=0.8, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white") +
   abline(a=0, b=0, lwd=1, lty="dashed")
 
-pirateplot(formula = Amp ~ Group + Deviant, data = pirat, main = "EEG (MMN-amplitude)", xlab = "group",ylab="Amplitude", ylim= c(-1.8,0.4), theme=2, pal="appletv", avg.line.fun = median, inf.method = "ci", cex.lab = 1, cex.axis = 1, cex.names = 0.7, avg.line.o=0.8, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white") +
-  abline(a=0, b=0, lwd=1, lty="dashed")
+pirateplot(formula = Amp ~ Group + Deviant, data = pirat, xlab = "Group",ylab="Amplitude (µV)", ylim= c(-1.8,0.4), theme=2, pal="appletv", avg.line.fun = median, inf.method = "ci", cex.lab = 1.1, cex.axis = 1, cex.names = 0.7, avg.line.o=1, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white") +
+  abline(a=33,33, b=0, lwd=1, lty="dashed")
 ```
 
 # Hierarchical mixed effects modeling - Latency (T2)
@@ -159,11 +215,6 @@ M7=lmer(Latency_peak.T2~Deviant*DeviantLevel*Group+(1|ID), data=lat_all, REML = 
 anova = anova(M0,M1,M2,M3,M4,M5,M6, M7)
 anova
 
-#export model output to word table
- tab_df(anova,
-        alternate.rows = TRUE,
-        title = "Effect on MMN Latency",
-        file = "lat_between.doc")
 ```
 
 ## Best model
@@ -201,9 +252,10 @@ pirat$Group[pirat$Time =="CIre_T2"]=gsub("CI_re", "CIre_T2", pirat$Group[pirat$T
 pirat$Group=ordered(pirat$Group, levels=c("CIre_T1", "CIre_T2", "CIex", "NH"))
 pirat$Deviant=ordered(pirat$Deviant, levels=c("Intensity", "Pitch", "Timbre", "Rhythm"))
 
-pirateplot(formula = Lat ~ Group + Deviant, data = pirat, main = "EEG (Latency)", xlab = "group",ylab="Latency", ylim= c(100,250), theme=2, pal="appletv", cex.lab = 1, cex.axis = 1, cex.names = 0.7, avg.line.o=0.8, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white")
+pirateplot(formula = Lat ~ Group + Deviant, data = pirat, main = "EEG (Latency)", xlab = "Group",ylab="Latency (ms)", ylim= c(100,250), theme=2, pal="appletv", cex.lab = 1, cex.axis = 1, cex.names = 0.7, avg.line.o=0.8, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white")
 
-pirateplot(formula = Lat ~ Group + Deviant, data = pirat, main = "EEG (Latency)", xlab = "group",ylab="Latency", ylim= c(100,250), theme=2, pal="appletv", avg.line.fun = median, inf.method = "ci", cex.lab = 1, cex.axis = 1, cex.names = 0.7, avg.line.o=0.8, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white")
+pirateplot(formula = Lat ~ Group + Deviant, data = pirat, xlab = "Group",ylab="Latency (ms)", ylim= c(100,250), theme=2, pal="appletv", avg.line.fun = median, inf.method = "ci", cex.lab = 1.1, cex.axis = 1, cex.names = 0.7, avg.line.o=1, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white") +
+  abline(a=33,33, b=0, lwd=1, lty="dashed")
 ```
 
 # Hierarchical mixed effects modeling - Behavioral (T2)
@@ -230,11 +282,6 @@ M7=glmer(cbind(AvCor*6,6)~Deviant*DeviantLevel*Group+(1|ID), data=All_behav[All_
 anova = anova(M0, M1, M2, M3, M4, M5, M6, M7)
 anova
 
-#export model output to word table
- tab_df(anova,
-        alternate.rows = TRUE,
-        title = "Effect on behavioral hit rates",
-        file = "behav_between.doc")
 ```
 
 ## Post-hoc analysis
@@ -248,11 +295,13 @@ emm_dc <- emm_d[[2]]
 
 #Group by deviant interaction
 
-emm_g.d <- emmeans(M5, pairwise ~ Group | Deviant)
-IC_g.d <- contrast(emm_g.d[[1]], method = "pairwise")
+
+emm_g.d <- emmeans(M5, pairwise ~ Group | Deviant, type = "response")
+IC_g.d <- contrast(emm_g.d_r[[1]], method = "pairwise")
 
 rbind(IC_g.d, adjust = "none")
 confint(rbind(IC_g.d), adjust ="none")
+
 ```
 
 ## Plots behavioral
@@ -263,10 +312,10 @@ ID_plot_data$Group=ordered(ID_plot_data$Group, levels=c("CIre_T1", "CIre_T2", "C
 ID_plot_data$Deviant=ordered(ID_plot_data$Deviant, levels=c("Intensity", "Pitch", "Timbre", "Rhythm"))
 
 ## Creating pirateplot
-pirateplot(formula = AvCor ~ Group + Deviant, data = ID_plot_data, main = "Behavioral (average correct)", xlab = "group",ylab="Average % correct", ylim= c(0,100), theme=2, pal="appletv", cex.lab = 1, cex.axis = 1, cex.names = 0.7, avg.line.o=0.8, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white") +
+pirateplot(formula = AvCor ~ Group + Deviant, data = ID_plot_data, main = "Behavioral performance rates", xlab = "Group",ylab="Average % correct", ylim= c(0,100), theme=2, pal="appletv", cex.lab = 1, cex.axis = 1, cex.names = 0.7, avg.line.o=0.8, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white") +
   abline(a=33,33, b=0, lwd=1, lty="dashed")
 
-pirateplot(formula = AvCor ~ Group + Deviant, data = ID_plot_data, main = "Behavioral (average correct)", xlab = "group",ylab="Average % correct", ylim= c(0,100), theme=2, pal="appletv", avg.line.fun = median, inf.method = "ci", cex.lab = 1, cex.axis = 1, cex.names = 0.7, avg.line.o=0.8, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white") +
+pirateplot(formula = AvCor ~ Group + Deviant, data = ID_plot_data, xlab = "Group",ylab="Average % correct", ylim= c(0,100), theme=2, pal="appletv", avg.line.fun = median, inf.method = "ci", cex.lab = 1.1, cex.axis = 1, cex.names = 0.7, avg.line.o=1, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white") +
   abline(a=33,33, b=0, lwd=1, lty="dashed")
 ```
 
