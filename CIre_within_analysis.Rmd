@@ -1,7 +1,7 @@
 ---
 title: "CIre within analysis"
 output:
-  pdf_document: default
+  pdf_document: default 
   html_document: default
 ---
 
