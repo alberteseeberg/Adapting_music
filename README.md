@@ -2,9 +2,9 @@
 
 Here you can find the scripts used for the statistical analyses in the paper. The paper can be found [here](https://www.google.com).
 
-*CI_Re_Within.Rmd* contains the longitudinal analysis of the data from recently implanted cochlear implant users.
+*CIre_Within_Analysis.Rmd* contains the longitudinal analysis of the data from recently implanted cochlear implant users.
 
-*CI_Between.Rmd* contains the group comparisons of the data from recently implanted and experienced cochlear implant users as well as normal hearing controls.
+*CI_Group_Analysis.Rmd* contains the group comparisons of the data from recently implanted and experienced cochlear implant users as well as normal hearing controls.
 
 Programming language: *R*. 
 
