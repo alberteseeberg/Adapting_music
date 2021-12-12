@@ -5,20 +5,168 @@ output: html_document
 
 #Load packages
 ```{r}
-pacman::p_load(ggplot2)
+pacman::p_load(readr, ggplot2, yarrr, dplyr)
+```
+
+```{r}
+amp = read_csv("amp.csv")
+amp_all = read_csv("amp_all.csv")
+
+amp$ID=as.factor(amp$ID)
+amp$Deviant=as.factor(amp$Deviant)
+amp$DeviantLevel=as.factor(amp$DeviantLevel)
+amp$Group=as.factor(amp$Group)
+
+amp_all$ID=as.factor(amp_all$ID)
+amp_all$Deviant=as.factor(amp_all$Deviant)
+amp_all$DeviantLevel=as.factor(amp_all$DeviantLevel)
+amp_all$Group=as.factor(amp_all$Group)
+
+```
+```{r}
+
+attach(amp_all[amp_all$Group == "CI_re",])
+shapiro.test(Amplitude.T1)
+hist(Amplitude.T1)
+shapiro.test(Amplitude.T2)
+hist(Amplitude.T2)
+detach()
+
+attach(amp_all[amp_all$Group == "CI_ex",])
+shapiro.test(Amplitude.T2)
+hist(Amplitude.T2)
+detach()
+
+attach(amp_all[amp_all$Group == "NH_old",])
+shapiro.test(Amplitude.T2)
+hist(Amplitude.T2)
+detach()
+
+
+## Checking if the amplitude of MMN is significant for each group in each deviant at each level
+
+##collapse levels
+amp_all = amp_all %>% dplyr::group_by(ID, Group) %>% dplyr::summarise(Amplitude.T1= mean(Amplitude.T1), Amplitude.T2=mean(Amplitude.T2))
+
+
+attach(amp_all[amp_all$Group == "CI_re",])
+shapiro.test(Amplitude.T1)
+hist(Amplitude.T1)
+shapiro.test(Amplitude.T2)
+hist(Amplitude.T2)
+detach()
+
+attach(amp_all[amp_all$Group == "CI_ex",])
+shapiro.test(Amplitude.T2)
+hist(Amplitude.T2)
+detach()
+
+attach(amp_all[amp_all$Group == "NH_old",])
+shapiro.test(Amplitude.T2)
+hist(Amplitude.T2)
+detach()
+
+set.seed(1)
+size <- 300
+df <- tibble::tibble(
+  Deviant = factor(as.integer(runif(size) * 4)),
+  DeviantLevel = factor(as.integer(runif(size) * 4)),
+  Group = factor(as.integer(runif(size) * 4)),
+  x = runif(size),
+  y = runif(size)
+)
+
+#combinations
+
+#combis <- df %>% dplyr::count(Deviant, DeviantLevel, Group)
+
+combinations <- list()
+
+for (dev in levels(amp_all$Deviant)) {
+  for (lev in levels(amp_all$DeviantLevel)) {
+    for (grp in levels(amp_all$Group)) {
+      # Get data for current combination
+      data <- amp_all %>%
+        dplyr::filter(Deviant == dev,
+                      DeviantLevel == lev,
+                      Group == grp)
+
+      # Create test
+      if (nrow(data) > 1) {
+        test.T1 <- wilcox.test(data$Amplitude.T1)$p.value
+        test.T2 <- wilcox.test(data$Amplitude.T2)$p.value
+        combination <-
+          list(list(
+            "Deviant" = dev,
+            "DeviantLevel" = lev,
+            "Group" = grp,
+            "test.T1" = test.T1,
+            "test.T2" = test.T2
+          ))
+        combinations <- c(combinations, combination)
+      }
+    }
+  }
+}
+
+# To data frame
+wilcox_p_all <- do.call(rbind, combinations) %>%
+  dplyr::as_tibble()
+
+View(wilcox_p_all)
+
 ```
 
 
-```{r}
 
+## Plot
+```{r}
+ID_plot_data = read_csv("ID_plot_data_amp.csv")
+
+pirat = ID_plot_data
+pirat$Group[pirat$Time =="CIre_T1"]=gsub("CI_re", "CIre_T1", pirat$Group[pirat$Time =="CIre_T1"])
+pirat$Group[pirat$Time =="CIre_T2"]=gsub("CI_re", "CIre_T2", pirat$Group[pirat$Time =="CIre_T2"])
+pirat$Group=ordered(pirat$Group, levels=c("CIre_T1", "CIre_T2", "CIex", "NH"))
+pirat$Deviant=ordered(pirat$Deviant, levels=c("Intensity", "Pitch", "Timbre", "Rhythm"))
+
+pirateplot(formula = Amp ~ Group + Deviant, data = pirat, main = "EEG (MMN-amplitude)", xlab = "Group",ylab="Amplitude (µV)", ylim= c(-1.8,0.4), theme=2, pal="appletv", cex.lab = 1, cex.axis = 1, cex.names = 0.7, avg.line.o=0.8, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white") +
+  abline(a=0, b=0, lwd=1, lty="dashed")
+
+pirateplot(formula = Amp ~ Group + Deviant, data = pirat, xlab = "Group",ylab="Amplitude (µV)", ylim= c(-1.8,0.4), theme=2, pal="appletv", avg.line.fun = median, inf.method = "ci", cex.lab = 1.1, cex.axis = 1, cex.names = 0.7, avg.line.o=1, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white") +
+  abline(a=33,33, b=0, lwd=1, lty="dashed")
 ```
 
 
-```{r}
 
+
+## Plot
+```{r}
+ID_plot_data = read_csv("ID_plot_data_lat.csv")
+
+pirat = ID_plot_data
+pirat$Group[pirat$Time =="CIre_T1"]=gsub("CI_re", "CIre_T1", pirat$Group[pirat$Time =="CIre_T1"])
+pirat$Group[pirat$Time =="CIre_T2"]=gsub("CI_re", "CIre_T2", pirat$Group[pirat$Time =="CIre_T2"])
+pirat$Group=ordered(pirat$Group, levels=c("CIre_T1", "CIre_T2", "CIex", "NH"))
+pirat$Deviant=ordered(pirat$Deviant, levels=c("Intensity", "Pitch", "Timbre", "Rhythm"))
+
+pirateplot(formula = Lat ~ Group + Deviant, data = pirat, main = "EEG (Latency)", xlab = "Group",ylab="Latency (ms)", ylim= c(100,250), theme=2, pal="appletv", cex.lab = 1, cex.axis = 1, cex.names = 0.7, avg.line.o=0.8, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white")
+
+pirateplot(formula = Lat ~ Group + Deviant, data = pirat, xlab = "Group",ylab="Latency (ms)", ylim= c(100,250), theme=2, pal="appletv", avg.line.fun = median, inf.method = "ci", cex.lab = 1.1, cex.axis = 1, cex.names = 0.7, avg.line.o=1, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white") +
+  abline(a=33,33, b=0, lwd=1, lty="dashed")
 ```
 
 
+## Plots behavioral
 ```{r}
+ID_plot_data = read_csv("ID_plot_data_behav.csv")
 
+ID_plot_data$Group=ordered(ID_plot_data$Group, levels=c("CIre_T1", "CIre_T2", "CIex", "NH"))
+ID_plot_data$Deviant=ordered(ID_plot_data$Deviant, levels=c("Intensity", "Pitch", "Timbre", "Rhythm"))
+
+## Creating pirateplot
+pirateplot(formula = AvCor ~ Group + Deviant, data = ID_plot_data, main = "Behavioral performance rates", xlab = "Group",ylab="Average % correct", ylim= c(0,100), theme=2, pal="appletv", cex.lab = 1, cex.axis = 1, cex.names = 0.7, avg.line.o=0.8, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white") +
+  abline(a=33,33, b=0, lwd=1, lty="dashed")
+
+pirateplot(formula = AvCor ~ Group + Deviant, data = ID_plot_data, xlab = "Group",ylab="Average % correct", ylim= c(0,100), theme=2, pal="appletv", avg.line.fun = median, inf.method = "ci", cex.lab = 1.1, cex.axis = 1, cex.names = 0.7, avg.line.o=1, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white") +
+  abline(a=33,33, b=0, lwd=1, lty="dashed")
 ```

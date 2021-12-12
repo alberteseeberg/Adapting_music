@@ -126,17 +126,14 @@ M7=glmer(cbind(AvCor*6,6)~Deviant*DeviantLevel*Time+(1|ID), data=long, family="b
 anova = anova(M0,M1,M2,M3,M4,M5,M6, M7)
 anova
 
-#export model output to word table
- tab_df(anova,
-        alternate.rows = TRUE,
-        title = "Effect on behavioral hit rates",
-        file = "behav_within.doc")
 ```
 
 ## Best model
 ```{r}
-summary(M2)
+summary(M5)
 ```
+
+
 
 # Hierarchical mixed effects modeling - Latency
 ```{r}
