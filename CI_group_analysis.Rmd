@@ -7,7 +7,7 @@ output:
 
 # Load packages
 ```{r}
-pacman::p_load(readr, lme4, emmeans, yarrr, ggplot2, dplyr, sjPlot)
+pacman::p_load(readr, lme4, emmeans, yarrr, ggplot2, dplyr, sjPlot, StatisticalModels)
 ```
 
 # Load data
@@ -74,6 +74,7 @@ M7=lmer(Amplitude.T2~0 + Deviant*Group*DeviantLevel +(1|ID), data=amp_all, REML 
 anova = anova(M0,M1,M2,M3,M4,M5,M6,M7)
 anova
 
+
 ```
 
 ## Best model
@@ -81,6 +82,8 @@ anova
 qqnorm(resid(M4))
 plot(M4)
 fixef(M7)
+
+R2GLMER(M4)
 ```
 
 ## Post-hoc analysis
@@ -112,7 +115,7 @@ confint(rbind(IC_r.d[c(4:6,10:12)],  adjust = 'none'))
 
 ```
 
-# Hierarchical mixed effects modeling - MMN Amplitude (T1)
+# Hierarchical mixed effects modeling - MMN Amplitude (T1) - sanity check
 ```{r}
 M0=lmer(Amplitude.T1~1+(1|ID), data=amp_all, REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
 
@@ -167,6 +170,7 @@ confint(rbind(IC_r.d[c(4:6,10:12)],  adjust = 'none'))
 ```{r}
 qqnorm(resid(M4))
 plot(M4)
+R2GLMER(M4)
 ```
 
 ## Post-hoc analysis
@@ -189,7 +193,6 @@ pirat$Deviant=ordered(pirat$Deviant, levels=c("Intensity", "Pitch", "Timbre", "R
 
 pirateplot(formula = Amp ~ Group + Deviant, data = pirat, xlab = "Group",ylab="Amplitude (µV)", ylim= c(-1.8,0.4), theme=2, pal="appletv", cex.lab = 1.1, cex.axis = 1, cex.names = 0.7, avg.line.o=1, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white")
 
-pirateplot(formula = Amp ~ Group + Deviant, data = pirat, xlab = "Group",ylab="Amplitude (µV)", ylim= c(-1.8,0.4), theme=2, pal="appletv", avg.line.fun = median, inf.method = "ci", cex.lab = 1.1, cex.axis = 1, cex.names = 0.7, avg.line.o=1, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white")
 ```
 
 # Hierarchical mixed effects modeling - Latency (T2)
@@ -221,6 +224,7 @@ anova
 ```{r}
 qqnorm(resid(M5))
 plot(M5)
+R2GLMER(M5)
 ```
 
 ## Post-hoc analysis
@@ -255,7 +259,7 @@ pirat$Deviant=ordered(pirat$Deviant, levels=c("Intensity", "Pitch", "Timbre", "R
 
 pirateplot(formula = Lat ~ Group + Deviant, data = pirat, xlab = "Group",ylab="Latency (ms)", ylim= c(100,250), theme=2, pal="appletv", cex.lab = 1.1, cex.axis = 1, cex.names = 0.7, avg.line.o=1, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white")
 
-pirateplot(formula = Lat ~ Group + Deviant, data = pirat, xlab = "Group",ylab="Latency (ms)", ylim= c(100,250), theme=2, pal="appletv", avg.line.fun = median, inf.method = "ci", cex.lab = 1.1, cex.axis = 1, cex.names = 0.7, avg.line.o=1, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white")
+
 ```
 
 # Hierarchical mixed effects modeling - Behavioral (T2)
@@ -281,6 +285,11 @@ M7=glmer(cbind(AvCor*6,6)~Deviant*DeviantLevel*Group+(1|ID), data=All_behav[All_
 #Comparing models 
 anova = anova(M0, M1, M2, M3, M4, M5, M6, M7)
 anova
+
+
+#Best model
+R2GLMER(M5)
+
 
 ```
 
@@ -315,21 +324,6 @@ ID_plot_data$Deviant=ordered(ID_plot_data$Deviant, levels=c("Intensity", "Pitch"
 pirateplot(formula = AvCor ~ Group + Deviant, data = ID_plot_data, xlab = "Group",ylab="Average % correct", ylim= c(0,100), theme=2, pal="appletv", cex.lab = 1.1, cex.axis = 1, cex.names = 0.7, avg.line.o=1, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white") +
   abline(a=33,33, b=0, lwd=1, lty="dashed")
 
-pirateplot(formula = AvCor ~ Group + Deviant, data = ID_plot_data, xlab = "Group",ylab="Average % correct", ylim= c(0,100), theme=2, pal="appletv", avg.line.fun = median, inf.method = "ci", cex.lab = 1.1, cex.axis = 1, cex.names = 0.7, avg.line.o=1, bar.f.o = .2, bean.b.o = .7, point.o = 0.3, point.pch = 1, back.col = "white") +
-  abline(a=33,33, b=0, lwd=1, lty="dashed")
 ```
 
 
-```{r}
-
-```
-
-
-```{r}
-
-```
-
-
-```{r}
-
-```

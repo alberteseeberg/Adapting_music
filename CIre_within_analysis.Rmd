@@ -7,7 +7,7 @@ output:
 
 # Load packages
 ```{r}
-pacman::p_load(readr, lme4, emmeans, sjPlot, stargazer)
+pacman::p_load(readr, lme4, emmeans, sjPlot, stargazer, MuMIn, dplyr, StatisticalModels)
 ```
 
 # Load data
@@ -51,16 +51,18 @@ M7=lmer(Amplitude~Deviant*DeviantLevel*Time+(1|ID), data=long, REML = FALSE, con
 anova = anova(M0,M1,M2,M3,M4,M5,M6,M7)
 anova
 
-#export model output to word table
- tab_df(anova,
-        alternate.rows = TRUE,
-        title = "Effect on MMN Amplitude",
-        file = "amp_within.doc")
 ```
 
 ## Best model
 ```{r}
 summary(M5)
+
+
+# R squared marginal: the variance explained by the fixed effects
+# R squared conditional the variance explained by the entire model 
+
+R2GLMER(M5)
+
 
 #Checking assumptions with diagnostic plots
 qqnorm(resid(M5))
@@ -126,11 +128,19 @@ M7=glmer(cbind(AvCor*6,6)~Deviant*DeviantLevel*Time+(1|ID), data=long, family="b
 anova = anova(M0,M1,M2,M3,M4,M5,M6, M7)
 anova
 
+
 ```
 
 ## Best model
 ```{r}
-summary(M5)
+summary(M2)
+
+# R squared marginal: the variance explained by the fixed effects
+# R squared conditional the variance explained by the entire model 
+
+R2GLMER(M2)
+
+
 ```
 
 
@@ -157,9 +167,9 @@ M7=lmer(Latency_peak~Deviant*DeviantLevel*Time+(1|ID), data=long, REML = FALSE, 
 anova = anova(M0,M1,M2,M3,M4,M5,M6, M7)
 anova
 
-#export model output to word table
- tab_df(anova,
-        alternate.rows = TRUE,
-        title = "Effect on MMN Latency",
-        file = "lat_within.doc")
+# #export model output to word table
+#  tab_df(anova,
+#         alternate.rows = TRUE,
+#         title = "Effect on MMN Latency",
+#         file = "lat_within.doc")
 ```
