@@ -1,6 +1,6 @@
 ## Adapting to the sound of music - music discrimination skills in recently implanted cochlear implant users
 
-Here you can find the scripts used for the statistical analyses in the paper. The paper can be found [here](https://www.google.com).
+Here you can find the scripts used for the statistical analyses in the paper. The paper can be found [here](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9830578/).
 
 *CIre_within_analysis.Rmd* contains the longitudinal analysis of the data from recently implanted cochlear implant users.
 
